@@ -559,6 +559,50 @@ def min_max(game_state: GameState) -> GameState:
     return game_state
 
 
+def alpha_beta(alpha: int, beta: int, state: GameState) -> GameState:
+    # if leaf level has been reached or a final state has been met
+    if state.depth == 0 or state.game_board.final():
+        state.estimation = state.game_board.estimate_score(state.depth)
+        return state
+
+    # if it is in a valid interval than processing is no longer needed
+    if alpha > beta:
+        return state
+
+    if state.current_player == GameBoard.MAX_P:
+        current_estimation = float('-inf')
+
+        for move in state.moves().values():
+
+            # compute the estimation for the new state
+            # by building the corresponding subtree
+            new_state = alpha_beta(alpha, beta, move)
+
+            if current_estimation < new_state.estimation:
+                state.chosen_state = new_state
+                current_estimation = new_state.estimation
+            if alpha < new_state.estimation:
+                alpha = new_state.estimation
+                # invalid interval since alpha should always be less than beta
+                if alpha >= beta:
+                    break
+    elif state.current_player == GameBoard.MIN_P:
+        current_estimation = float('inf')
+
+        for move in state.moves().values():
+            new_state = alpha_beta(alpha, beta, move)
+
+            if current_estimation > new_state.estimation:
+                state.chosen_state = new_state
+                current_estimation = new_state.estimation
+            if beta > new_state.estimation:
+                if alpha >= beta:
+                    break
+
+    state.estimation = state.chosen_state.estimation
+    return state
+
+
 def main():
     pygame.init()
     menu_canvas = Menu()
