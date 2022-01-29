@@ -185,121 +185,137 @@ class GameBoard:
 
         # placed element
         el = self.matrix[row, col]
-
         vertical = 1
         horizontal = 1
         first_diag = 1
         second_diag = 1
 
         # check vertical
-        # check upward
+        # vertical x ascending
+        v_x_up = row
+
+        # vertical x descending
+        v_x_dw = row
         try:
-            x = row - 1
-            while self.matrix[x, col] == el:
+            v_x_up = row - 1
+            while self.matrix[v_x_up, col] == el and v_x_up >= 0:
                 vertical += 1
-                if vertical >= 3:
-                    return True
-                x -= 1
+                v_x_up -= 1
         except IndexError:
             pass
 
         # check downward
         try:
-            x = row + 1
-            while self.matrix[x, col] == el:
+            v_x_dw = row + 1
+            while self.matrix[v_x_dw, col] == el and v_x_dw < GameBoard.BOARD_ROWS:
                 vertical += 1
-                if vertical >= 3:
-                    return True
-                x += 1
+                v_x_dw += 1
         except IndexError:
             pass
 
         if vertical >= 3:
+            print(f'[DEBUG] Vertical - 3_IN_A_LINE _ from {(v_x_up, col)}: -> {(v_x_dw, col)}')
             return True
 
         # check horizontal
-        # check left
+        # horizontal y left
+        h_y_l = col
+
+        # horizontal y right
+        h_y_r = col
         try:
-            y = col - 1
-            while self.matrix[row, y] == el:
+            h_y_l = col - 1
+            while self.matrix[row, h_y_l] == el and h_y_l >= 0:
                 horizontal += 1
-                if horizontal >= 3:
-                    return True
-                y -= 1
+                h_y_l -= 1
         except IndexError:
             pass
 
         # check right
         try:
-            y = col + 1
-            while self.matrix[row, y] == el:
+            h_y_r = col + 1
+            while self.matrix[row, h_y_r] == el and h_y_r < GameBoard.BOARD_COLS:
                 horizontal += 1
-                if horizontal >= 3:
-                    return True
-                y += 1
+                h_y_r += 1
         except IndexError:
             pass
 
         if horizontal >= 3:
+            print(f'[DEBUG] Horizontal - 3_IN_A_LINE _ from {(row, h_y_l)}: -> {(row, h_y_r)}')
             return True
 
         # check first diagonal
         # check descending
+
+        # first diagonal x descending
+        f_d_x_d = row
+
+        # first diagonal y descending
+        f_d_y_d = col
         try:
-            x = row + 1
-            y = col + 1
-            while self.matrix[x, y] == el:
+            f_d_x_d = row + 1
+            f_d_y_d = col + 1
+            while self.matrix[f_d_x_d, f_d_y_d] == el and f_d_x_d < GameBoard.BOARD_ROWS and f_d_y_d < GameBoard.BOARD_COLS:
                 first_diag += 1
-                if first_diag >= 3:
-                    return True
-                x += 1
-                y += 1
+                f_d_x_d += 1
+                f_d_y_d += 1
         except IndexError:
             pass
 
         # check ascending
+        # first diagonal x ascending
+        f_d_x_a = row
+
+        # first diagonal y ascending
+        f_d_y_a = col
         try:
-            x = row - 1
-            y = col - 1
-            while self.matrix[x, y] == el:
+            f_d_x_a = row - 1
+            f_d_y_a = col - 1
+            while self.matrix[f_d_x_a, f_d_y_a] == el and f_d_x_a >= 0 and f_d_y_a >= 0:
                 first_diag += 1
-                if first_diag >= 3:
-                    return True
-                x -= 1
-                y -= 1
+                f_d_x_a -= 1
+                f_d_y_a -= 1
         except IndexError:
             pass
 
         if first_diag >= 3:
+            print(f'[DEBUG] First diagonal - 3_IN_A_LINE _ from {(f_d_x_a, f_d_y_a)}: -> {(f_d_x_d, f_d_y_d)}')
             return True
 
         # check second diagonal
-        # check descending
+        # second diagonal x descending
+        s_d_x_d = row
+
+        # second diagonal y descending
+        s_d_y_d = col
         try:
-            x = row + 1
-            y = col - 1
-            while self.matrix[x, y] == el:
+            s_d_x_d = row + 1
+            s_d_y_d = col - 1
+            while self.matrix[s_d_x_d, s_d_y_d] == el and s_d_x_d < GameBoard.BOARD_ROWS and s_d_y_d >= 0:
                 second_diag += 1
-                if second_diag >= 3:
-                    return True
-                x += 1
-                y -= 1
+                s_d_x_d += 1
+                s_d_y_d -= 1
         except IndexError:
             pass
 
+
+        # second diagonal x ascending
+        s_d_x_a = row
+
+        # second diagonal y ascending
+        s_d_y_a = col
         try:
-            x = row - 1
-            y = col + 1
-            while self.matrix[x, y] == el:
+            s_d_x_a = row - 1
+            s_d_y_a = col + 1
+            while self.matrix[s_d_x_a, s_d_y_a] == el and s_d_x_a >= 0 and s_d_y_a < GameBoard.BOARD_COLS:
                 second_diag += 1
-                if second_diag >= 3:
-                    return True
-                x -= 1
-                y += 1
+                s_d_x_a -= 1
+                s_d_y_a += 1
         except IndexError:
             pass
 
         if second_diag >= 3:
+            print(f'[DEBUG] First diagonal - 3_IN_A_LINE _ from {(s_d_x_a, s_d_y_a)}: -> {(s_d_x_d, s_d_y_d)}')
             return True
 
         return False
@@ -315,17 +331,27 @@ class GameBoard:
         else:
             return 1
 
+    # KEEP CHECKING THIS METHOD
     def final(self):
-        empty_board = True
+        is_full = True
         for row in range(GameBoard.BOARD_ROWS):
             for col in range(GameBoard.BOARD_COLS):
                 # if square has been claimed by one of the players
                 # check if it is part of a losing combination
+
+                # if matrix[row, col] is not marked by any player
+                # go to the next square
                 if not self.matrix[row, col]:
-                    empty_board = True
+                    is_full = False
                     continue
-                return self.check_loss_condition(row, col)
-        return 'DRAW' if empty_board else False
+
+                # if a non-empty square has been found check if it is part
+                # of a loss condition
+                if self.check_loss_condition(row, col):
+                    return True
+        # if there are no empty square left and there's no winner
+        # then return DRAW else return False since it is not a final state
+        return False if not is_full else 'DRAW'
 
 
 def neighbors(x, y):
@@ -382,6 +408,119 @@ class GameState:
         return d_state_moves
 
 
+class Menu:
+    MENU_CANVAS = None
+    WIDTH = -1
+    HEIGHT = -1
+
+    # Font properties
+    GUI_FONT = None
+    DEFAULT_FONT_COLOR = None
+
+    # Buttons properties
+    DEFAULT_BUTTON_COLOR = None
+    DEFAULT_BUTTON_COLOR_UNDER = None
+    DEFAULT_HOVER_COLOR = None
+    DEFAULT_BUTTON_FONT_COLOR = None
+
+    #
+    BACKGROUND_COLOR = pygame.color.Color(28, 170, 156)
+
+    # MENU_COLOR = pygame.color.Color()
+    @classmethod
+    def init(cls):
+        cls.WIDTH = 300
+        cls.HEIGHT = 400
+
+        cls.GUI_FONT = pygame.font.Font(None, 30)
+        cls.DEFAULT_FONT_COLOR = pygame.color.Color(pygame.color.Color(239, 231, 200))
+
+        cls.DEFAULT_BUTTON_COLOR = pygame.color.Color(23, 145, 135)
+        cls.DEFAULT_BUTTON_COLOR_UNDER = pygame.color.Color(251, 211, 15)
+        cls.DEFAULT_HOVER_COLOR = pygame.color.Color('#0c7167')
+        cls.DEFAULT_BUTTON_FONT_COLOR = pygame.color.Color(239, 231, 200)
+
+        cls.MENU_CANVAS = pygame.display.set_mode((Menu.WIDTH, Menu.HEIGHT))
+        cls.MENU_CANVAS.fill(cls.BACKGROUND_COLOR)
+
+        pygame.display.update()
+
+
+class Button:
+    def __init__(self, text: str, width: int, height: int, pos: (int, int), elevation):
+        # core attributes
+        self.pressed = False
+        self.elevation = elevation
+        self.dynamic_elevation = elevation
+        self.original_y_pos = pos[1]
+
+        # top rectangle
+        self.top_rect = pygame.rect.Rect(pos, (width, height))
+        self.top_color = Menu.DEFAULT_BUTTON_COLOR
+        self.hover_color = Menu.DEFAULT_HOVER_COLOR
+
+        # bottom rectangle
+        self.bottom_rect = pygame.rect.Rect(pos, (width - 4, height))
+        self.bottom_color = Menu.DEFAULT_BUTTON_COLOR_UNDER
+
+        # text
+        self.text_surf = Menu.GUI_FONT.render(text, True, Menu.DEFAULT_FONT_COLOR)
+        self.text_rect = self.text_surf.get_rect(center=self.top_rect.center)
+
+    def draw(self):
+        screen = Menu.MENU_CANVAS
+
+        self.top_rect.y = self.original_y_pos - self.dynamic_elevation
+        self.text_rect.center = self.top_rect.center
+
+        self.bottom_rect.midtop = self.top_rect.midtop
+        self.bottom_rect.height = self.top_rect.height + self.dynamic_elevation
+
+        pygame.draw.rect(screen, self.bottom_color, self.bottom_rect, border_radius=12)
+        pygame.draw.rect(screen, self.top_color, self.top_rect, border_radius=12)
+
+        # TODO research more about blit
+        screen.blit(self.text_surf, self.text_rect)
+        return self.check_clicked()
+
+    def check_clicked(self):
+        mouse_pos = pygame.mouse.get_pos()
+        if self.top_rect.collidepoint(mouse_pos):
+            self.top_color = Menu.DEFAULT_HOVER_COLOR
+            if pygame.mouse.get_pressed()[0]:
+                self.dynamic_elevation = 0
+                self.pressed = True
+            else:
+                self.dynamic_elevation = self.elevation
+                if self.pressed:
+                    self.pressed = False
+                    return True
+        else:
+            self.dynamic_elevation = self.elevation
+            self.top_color = Menu.DEFAULT_BUTTON_COLOR
+
+
+class PlayerButton(Button):
+    def check_clicked(self):
+        mouse_pos = pygame.mouse.get_pos()
+        if self.top_rect.collidepoint(mouse_pos):
+            self.top_color = Menu.DEFAULT_HOVER_COLOR
+            if pygame.mouse.get_pressed()[0]:
+                self.dynamic_elevation = 0
+                self.pressed = True
+            else:
+                if self.pressed:
+                    return True
+        else:
+            if not self.pressed:
+                self.top_color = Menu.DEFAULT_BUTTON_COLOR
+
+    def reset(self):
+        self.dynamic_elevation = self.elevation
+        self.pressed = False
+        self.top_color = Menu.DEFAULT_BUTTON_COLOR
+
+
 def min_max(game_state: GameState) -> GameState:
     """
     :param game_state: parent GameState from which child nodes are derived
@@ -409,18 +548,81 @@ def min_max(game_state: GameState) -> GameState:
         # pick the state with the max estimation
         # if the current player is MIN_P i.e. the player most of the times
         # -- tries to maximize the outcome
-        game_state.chosen_state = max(estimated_moves, key=lambda x: x.estimation)
+        game_state.chosen_state = min(estimated_moves, key=lambda x: x.estimation)
     else:
         # pick the state with the min estimation
         # if the current player is MIN_P i.e. the player
         # -- tries to minimize
-        game_state.chosen_state = min(estimated_moves, key=lambda x: x.estimation)
+        game_state.chosen_state = max(estimated_moves, key=lambda x: x.estimation)
 
     game_state.estimation = game_state.chosen_state.estimation
     return game_state
 
 
 def main():
+    pygame.init()
+    menu_canvas = Menu()
+    Menu.init()
+
+    # DEFAULT BUTTON FOR STARTING THE GAME
+    default_button = Button('START GAME', 200, 40, (Menu.WIDTH // 2 - 100, Menu.HEIGHT - 80), elevation=5)
+
+    # USEFUL LABELS
+    symbol_label = Menu.GUI_FONT.render('Choose your symbol: ', True, Menu.DEFAULT_FONT_COLOR)
+    difficulty_label = Menu.GUI_FONT.render('Choose difficulty: ', True, Menu.DEFAULT_FONT_COLOR)
+
+    # PLAYER BUTTONS
+    x_button = PlayerButton('X', 100, 60, (30, 60), elevation=5)
+    o_button = PlayerButton('O', 100, 60, (Menu.WIDTH - 130, 60), elevation=5)
+
+    easy_difficulty_button = PlayerButton('EASY', 200, 30, (Menu.WIDTH // 2 - 100, 175), elevation=5)
+    medium_difficulty_button = PlayerButton('MEDIUM', 200, 30, (Menu.WIDTH // 2 - 100, 215), elevation=5)
+    hard_difficulty_button = PlayerButton('HARD', 200, 30, (Menu.WIDTH // 2 - 100, 255), elevation=5)
+    clock = pygame.time.Clock()
+
+    # GAME INPUTS:
+    human_player = -1
+    max_depth = -1
+
+    while True:
+        if pygame.display.get_init():
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+            menu_canvas.MENU_CANVAS.fill(Menu.BACKGROUND_COLOR)
+            menu_canvas.MENU_CANVAS.blit(symbol_label, (45, 25))
+            menu_canvas.MENU_CANVAS.blit(difficulty_label, (60, 140))
+
+            if easy_difficulty_button.draw():
+                max_depth = 1
+                medium_difficulty_button.reset()
+                hard_difficulty_button.reset()
+
+            if medium_difficulty_button.draw():
+                max_depth = 3
+                easy_difficulty_button.reset()
+                hard_difficulty_button.reset()
+
+            if hard_difficulty_button.draw():
+                max_depth = 5
+                easy_difficulty_button.reset()
+                medium_difficulty_button.reset()
+
+            if default_button.draw():
+                break
+            if x_button.draw():
+                o_button.reset()
+                human_player = 1
+
+            if o_button.draw():
+                x_button.reset()
+                human_player = 2
+
+            pygame.display.update()
+            clock.tick(60)
+
     # x = int(input('NO ROWS: '))
     # y = int(input('NO COLS: '))
 
@@ -447,7 +649,7 @@ def main():
     # TODO #7
     # create a menu for inputting all data & select game difficulty
 
-    GameBoard.BOARD_ROWS = 6
+    GameBoard.BOARD_ROWS = 4
     GameBoard.BOARD_COLS = 4
 
     # initialize the game board
@@ -457,10 +659,10 @@ def main():
     game_board.draw_figure()
     pygame.display.flip()
 
-    GameBoard.MIN_P = 1
-    GameBoard.MAX_P = 2
+    GameBoard.MIN_P = human_player
+    GameBoard.MAX_P = 2 if human_player == 1 else 1
 
-    GameBoard.MAX_DEPTH = 6
+    GameBoard.MAX_DEPTH = max_depth
 
     current_state = GameState(game_board=game_board, current_player=game_board.MIN_P, depth=GameBoard.MAX_DEPTH)
 
@@ -512,6 +714,7 @@ def main():
                 print(f'=== Computing took: {t_after - t_before} ===')
 
                 if current_state.game_board.final():
+                    print(current_state.game_board.matrix)
                     print(f'PLAYER LOST: {current_state.current_player}')
 
                 # TODO - check if win
