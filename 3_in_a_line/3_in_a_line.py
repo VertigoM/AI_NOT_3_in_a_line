@@ -50,6 +50,9 @@ class GameBoard:
     # game turn
     TURN = 0
 
+    # font
+    GUI_FONT = None
+
     def __init__(self, matrix=None):
         """
         :param matrix: existing game_matrix
@@ -85,6 +88,10 @@ class GameBoard:
         cls.CANVAS.fill(cls.GOOGLE_BG_COLOR)
         cls.draw_lines()
 
+        # font details
+        # TODO - GET AN ARCADE FONT
+        cls.GUI_FONT = pygame.font.Font(None, 30)
+
         pygame.display.set_caption('NOT 3 in a line!')
 
     @classmethod
@@ -100,6 +107,11 @@ class GameBoard:
                              (index * cls.CELL_SIZE, 0), (index * cls.CELL_SIZE, cls.HEIGHT), cls.LINE_WIDTH)
 
     def draw_figure(self):
+        # REDRAW THE ENTIRE GRID
+        # --------------------------------------------------------
+        self.__class__.CANVAS.fill(self.__class__.GOOGLE_BG_COLOR)
+        self.__class__.draw_lines()
+        # --------------------------------------------------------
         for row in range(self.__class__.BOARD_ROWS):
             for col in range(self.__class__.BOARD_COLS):
                 (x, y) = (col * self.__class__.CELL_SIZE, row * self.__class__.CELL_SIZE)
@@ -112,13 +124,45 @@ class GameBoard:
                     pygame.draw.line(self.__class__.CANVAS, self.__class__.CROSS_COLOR,
                                      (x + self.__class__.CELL_SIZE - self.__class__.CROSS_SPACE,
                                       y + self.__class__.CROSS_SPACE), (x + self.__class__.CROSS_SPACE,
-                                                                        y + self.__class__.CELL_SIZE - self.__class__.CROSS_SPACE),
+                                            y + self.__class__.CELL_SIZE - self.__class__.CROSS_SPACE),
                                      self.__class__.CROSS_WIDTH)
                 elif self.matrix[row, col] == 2:
                     pygame.draw.circle(self.__class__.CANVAS, self.__class__.CIRCLE_COLOR,
                                        (x + self.__class__.CELL_SIZE // 2, y + self.__class__.CELL_SIZE // 2),
                                        self.__class__.CIRCLE_RADIUS,
                                        self.__class__.CIRCLE_WIDTH)
+
+    def draw_winning_screen(self, player):
+        self.__class__.CANVAS.fill(self.__class__.GOOGLE_BG_COLOR)
+
+        winner_label = self.__class__.GUI_FONT.render('WINNER: ', True, Menu.DEFAULT_FONT_COLOR)
+        draw_label = self.__class__.GUI_FONT.render('DRAW', True, Menu.DEFAULT_FONT_COLOR)
+
+        screen_center = (self.__class__.BOARD_COLS * self.__class__.CELL_SIZE / 2,
+                         self.__class__.BOARD_ROWS * self.__class__.CELL_SIZE / 2)
+        text_rect = winner_label.get_rect(center=screen_center)
+
+        (x, y) = (screen_center[0] - 45, screen_center[1] + 10)
+        if player == 1:
+            self.CANVAS.blit(winner_label, text_rect)
+            pygame.draw.line(self.__class__.CANVAS, self.__class__.CROSS_COLOR,
+                             (x + self.__class__.CROSS_SPACE, y + self.__class__.CROSS_SPACE),
+                             (x + self.__class__.CELL_SIZE - self.__class__.CROSS_SPACE,
+                              y + self.__class__.CELL_SIZE - self.__class__.CROSS_SPACE),
+                             self.CROSS_WIDTH)
+            pygame.draw.line(self.__class__.CANVAS, self.__class__.CROSS_COLOR,
+                             (x + self.__class__.CELL_SIZE - self.__class__.CROSS_SPACE,
+                              y + self.__class__.CROSS_SPACE), (x + self.__class__.CROSS_SPACE,
+                                                                y + self.__class__.CELL_SIZE - self.__class__.CROSS_SPACE),
+                             self.__class__.CROSS_WIDTH)
+        elif player == 2:
+            self.CANVAS.blit(winner_label, text_rect)
+            pygame.draw.circle(self.__class__.CANVAS, self.__class__.CIRCLE_COLOR,
+                               (x + self.__class__.CELL_SIZE // 2, y + self.__class__.CELL_SIZE // 2),
+                               self.__class__.CIRCLE_RADIUS,
+                               self.__class__.CIRCLE_WIDTH)
+        else:
+            self.CANVAS.blit(draw_label, text_rect)
 
     @classmethod
     def adverse_player(cls, current_player):
@@ -153,6 +197,13 @@ class GameBoard:
         print(f'[DEBUG] Current board:\n{self.matrix}')
         print(f'[DEBUG] Possible moves:\n{l_moves} // len: {len(l_moves)} for player: {player}')
         return l_moves
+
+    def draw_available_moves(self, player):
+        available_moves = self.available_moves(player)
+        for move in available_moves:
+            pygame.draw.rect(self.__class__.CANVAS, self.__class__.LINE_COLOR,
+                             pygame.rect.Rect((move[1] * self.__class__.CELL_SIZE + 10,
+                                               move[0] * self.__class__.CELL_SIZE + 10), (60, 60)), border_radius=10)
 
     def boards_from_available_moves(self, player) -> dict:
         """
@@ -693,8 +744,8 @@ def main():
     # TODO #7
     # create a menu for inputting all data & select game difficulty
 
-    GameBoard.BOARD_ROWS = 4
-    GameBoard.BOARD_COLS = 4
+    GameBoard.BOARD_ROWS = 6
+    GameBoard.BOARD_COLS = 6
 
     # initialize the game board
     game_board = GameBoard()
@@ -718,6 +769,7 @@ def main():
                         pygame.quit()
                         sys.exit(0)
                     if event.type == pygame.MOUSEBUTTONDOWN:
+
                         (x, y) = map(lambda pos: pos // GameBoard.CELL_SIZE, event.pos)
                         # don't end turn until a valid move is not made
                         if current_state.game_board.available_square(*(y, x), current_state.current_player):
@@ -728,15 +780,10 @@ def main():
                             # don't continue running the code and listen
                             # to the next event
                             continue
+                        current_state.game_board.draw_figure()
 
                         # the move was valid
                         GameBoard.LAST_MOVE = (y, x)
-
-                        current_state.game_board.draw_figure()
-                        pygame.display.update(
-                            pygame.Rect(x * GameBoard.CELL_SIZE, y * GameBoard.CELL_SIZE, GameBoard.CELL_SIZE,
-                                        GameBoard.CELL_SIZE))
-
                         current_state.current_player = GameBoard.adverse_player(current_state.current_player)
 
                         GameBoard.TURN += 1
@@ -762,9 +809,19 @@ def main():
                     print(f'PLAYER LOST: {current_state.current_player}')
 
                 # TODO - check if win
-                current_state.current_player = GameBoard.adverse_player(current_state.current_player)
 
+                current_state.current_player = GameBoard.adverse_player(current_state.current_player)
+                current_state.game_board.draw_available_moves(current_state.current_player)
+                pygame.display.flip()
                 GameBoard.TURN += 1
+
+            if current_state.game_board.final():
+                current_state.game_board.draw_winning_screen(current_state.current_player)
+                pygame.display.flip()
+
+                time.sleep(5)
+                pygame.quit()
+                sys.exit(0)
 
             # check if board is full and stop game
             if current_state.game_board.is_board_full():
